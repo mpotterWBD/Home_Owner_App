@@ -15,7 +15,8 @@ describe('NewProjectModal', () => {
       createHouseFile: vi.fn(),
       openHouseFile: vi.fn(),
       addProject: vi.fn(),
-      updateProject: vi.fn()
+      updateProject: vi.fn(),
+      completeProject: vi.fn()
     }
   })
 
@@ -171,6 +172,38 @@ describe('NewProjectModal', () => {
     expect(onCreate).toHaveBeenCalledWith(
       expect.objectContaining({ photoSourcePaths: ['C:/photos/after.jpg'] })
     )
+  })
+
+  it('shows the "move to when complete" dropdown only for In Progress, and includes the choice', async () => {
+    const user = userEvent.setup()
+    const onCreate = vi.fn()
+    render(
+      <NewProjectModal
+        category="in_progress"
+        categoryLabel="In Progress"
+        onCancel={vi.fn()}
+        onCreate={onCreate}
+      />
+    )
+
+    await user.type(screen.getByLabelText('Description'), 'Replace roof')
+    await user.selectOptions(screen.getByLabelText('Move to when complete'), 'build')
+    await user.click(screen.getByRole('button', { name: 'Create' }))
+
+    expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({ targetCategory: 'build' }))
+  })
+
+  it('does not show the "move to when complete" dropdown for other categories', () => {
+    render(
+      <NewProjectModal
+        category="repair"
+        categoryLabel="Repair"
+        onCancel={vi.fn()}
+        onCreate={vi.fn()}
+      />
+    )
+
+    expect(screen.queryByLabelText('Move to when complete')).not.toBeInTheDocument()
   })
 
   it('does not attach an invoice when the file picker is cancelled', async () => {

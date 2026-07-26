@@ -16,7 +16,8 @@ describe('NewHouseModal', () => {
       createHouseFile: vi.fn(),
       openHouseFile: vi.fn(),
       addProject: vi.fn(),
-      updateProject: vi.fn()
+      updateProject: vi.fn(),
+      completeProject: vi.fn()
     }
   })
 

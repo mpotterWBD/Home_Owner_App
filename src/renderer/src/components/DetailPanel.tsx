@@ -6,9 +6,15 @@ interface DetailPanelProps {
   project: Project
   maxHeight?: number
   onEdit: () => void
+  onComplete: () => void
 }
 
-function DetailPanel({ project, maxHeight, onEdit }: DetailPanelProps): React.JSX.Element {
+function DetailPanel({
+  project,
+  maxHeight,
+  onEdit,
+  onComplete
+}: DetailPanelProps): React.JSX.Element {
   const photoPaths = project.photoPaths ?? []
 
   return (
@@ -39,6 +45,11 @@ function DetailPanel({ project, maxHeight, onEdit }: DetailPanelProps): React.JS
             {project.cost !== undefined ? `-$${project.cost.toFixed(2)}` : '—'}
           </span>
         </p>
+        {project.category === 'in_progress' && (
+          <button className="btn btn-complete" onClick={onComplete}>
+            Complete
+          </button>
+        )}
         {photoPaths.length > 0 && (
           <>
             <div className="detail-divider">

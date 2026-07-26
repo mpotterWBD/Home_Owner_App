@@ -37,6 +37,7 @@ export interface Api {
   openInvoice: (invoicePath: string) => Promise<void>
   addProject: (filePath: string, input: NewProjectInput) => Promise<HouseFileResult>
   updateProject: (filePath: string, input: UpdateProjectInput) => Promise<HouseFileResult>
+  completeProject: (filePath: string, projectId: string) => Promise<HouseFileResult>
 }
 
 declare global {

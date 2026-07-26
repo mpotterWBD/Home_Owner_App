@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
-import { Project, UpdateProjectInput } from '../../../shared/houseFile'
+import {
+  COMPLETION_CATEGORIES,
+  CompletionCategory,
+  Project,
+  UpdateProjectInput
+} from '../../../shared/houseFile'
 
 interface EditProjectModalProps {
   project: Project
@@ -38,6 +43,9 @@ function EditProjectModal({
     (project.photoPaths ?? []).map((path) => ({ path }))
   )
   const [newPhotos, setNewPhotos] = useState<PickedPhoto[]>([])
+  const [targetCategory, setTargetCategory] = useState<CompletionCategory>(
+    project.targetCategory ?? 'maintenance'
+  )
 
   useEffect(() => {
     if (project.invoicePath) {
@@ -91,7 +99,8 @@ function EditProjectModal({
       cost: cost ? Number(cost) : undefined,
       invoiceSourcePath: invoicePath,
       existingPhotoPaths: existingPhotos.map((photo) => photo.path),
-      newPhotoSourcePaths: newPhotos.map((photo) => photo.path)
+      newPhotoSourcePaths: newPhotos.map((photo) => photo.path),
+      targetCategory: project.category === 'in_progress' ? targetCategory : undefined
     })
   }
 
@@ -135,6 +144,21 @@ function EditProjectModal({
               onChange={(e) => setCost(e.target.value)}
             />
           </label>
+          {project.category === 'in_progress' && (
+            <label className="field">
+              <span>Move to when complete</span>
+              <select
+                value={targetCategory}
+                onChange={(e) => setTargetCategory(e.target.value as CompletionCategory)}
+              >
+                {COMPLETION_CATEGORIES.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <div className="field">
             <span>Invoice</span>
             {invoicePreview && <img className="photo-preview" src={invoicePreview} alt="Invoice" />}

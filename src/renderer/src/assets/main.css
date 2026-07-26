@@ -396,7 +396,8 @@
   color: var(--ev-c-text-2);
 }
 
-.field input {
+.field input,
+.field select {
   padding: 8px 10px;
   border-radius: 6px;
   border: 1px solid var(--ev-c-gray-3);
@@ -478,4 +479,17 @@
 .btn-full {
   width: 100%;
   justify-content: center;
+}
+
+.btn-complete {
+  width: 100%;
+  justify-content: center;
+  margin-top: 12px;
+  background: #30a46c;
+  border-color: #30a46c;
+  color: #fff;
+}
+
+.btn-complete:hover {
+  background: #2b9161;
 }

@@ -93,6 +93,16 @@ function App(): React.JSX.Element {
     }
   }
 
+  const handleCompleteProject = async (): Promise<void> => {
+    if (!filePath || !selectedProject) return
+    try {
+      const result = await window.api.completeProject(filePath, selectedProject.id)
+      setHouseFile(result.data)
+    } catch (error) {
+      console.error('Failed to complete project', error)
+    }
+  }
+
   const handleSelectProject = (id: string): void => {
     setSelectedProjectId((current) => (current === id ? null : id))
     setIsEditing(false)
@@ -122,6 +132,7 @@ function App(): React.JSX.Element {
                 project={selectedProject}
                 maxHeight={detailMaxHeight}
                 onEdit={() => setIsEditing(true)}
+                onComplete={handleCompleteProject}
               />
             )}
           </div>

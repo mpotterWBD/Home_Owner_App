@@ -28,7 +28,8 @@ describe('DetailPanel', () => {
       createHouseFile: vi.fn(),
       openHouseFile: vi.fn(),
       addProject: vi.fn(),
-      updateProject: vi.fn()
+      updateProject: vi.fn(),
+      completeProject: vi.fn()
     }
   })
 
@@ -41,7 +42,7 @@ describe('DetailPanel', () => {
       cost: 850,
       invoicePath: 'C:/invoices/receipt.pdf'
     })
-    render(<DetailPanel project={project} onEdit={vi.fn()} />)
+    render(<DetailPanel project={project} onEdit={vi.fn()} onComplete={vi.fn()} />)
 
     expect(screen.getByText(/Replaced water heater/)).toBeInTheDocument()
     expect(screen.getByText('Old unit was leaking from the base.')).toBeInTheDocument()
@@ -54,7 +55,7 @@ describe('DetailPanel', () => {
   it('renders one fixed-size photo per entry in photoPaths', () => {
     vi.mocked(window.api.readPhoto).mockResolvedValue({ dataUrl: 'data:image/jpeg;base64,AAA' })
     const project = makeProject({ photoPaths: ['C:/photos/a.jpg', 'C:/photos/b.jpg'] })
-    const { container } = render(<DetailPanel project={project} onEdit={vi.fn()} />)
+    const { container } = render(<DetailPanel project={project} onEdit={vi.fn()} onComplete={vi.fn()} />)
 
     expect(container.querySelectorAll('.project-photo')).toHaveLength(2)
   })
@@ -65,17 +66,34 @@ describe('DetailPanel', () => {
     // @ts-expect-error simulating data from disk that predates this field
     delete legacyProject.photoPaths
 
-    expect(() => render(<DetailPanel project={legacyProject} onEdit={vi.fn()} />)).not.toThrow()
+    expect(() => render(<DetailPanel project={legacyProject} onEdit={vi.fn()} onComplete={vi.fn()} />)).not.toThrow()
     expect(screen.getByText(/Replaced water heater/)).toBeInTheDocument()
   })
 
   it('calls onEdit when the pencil icon is clicked', async () => {
     const user = userEvent.setup()
     const onEdit = vi.fn()
-    render(<DetailPanel project={makeProject()} onEdit={onEdit} />)
+    render(<DetailPanel project={makeProject()} onEdit={onEdit} onComplete={vi.fn()} />)
 
     await user.click(screen.getByRole('button', { name: 'Edit item' }))
 
     expect(onEdit).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows a Complete button only for In Progress items, and calls onComplete', async () => {
+    const user = userEvent.setup()
+    const onComplete = vi.fn()
+    const inProgress = makeProject({ category: 'in_progress' })
+    const { rerender } = render(
+      <DetailPanel project={inProgress} onEdit={vi.fn()} onComplete={onComplete} />
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Complete' }))
+    expect(onComplete).toHaveBeenCalledTimes(1)
+
+    rerender(
+      <DetailPanel project={makeProject({ category: 'repair' })} onEdit={vi.fn()} onComplete={vi.fn()} />
+    )
+    expect(screen.queryByRole('button', { name: 'Complete' })).not.toBeInTheDocument()
   })
 })

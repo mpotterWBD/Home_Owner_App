@@ -9,6 +9,14 @@ export const PROJECT_CATEGORIES: { value: ProjectCategory; label: string }[] = [
   { value: 'build', label: 'Build' }
 ]
 
+export type CompletionCategory = 'maintenance' | 'repair' | 'build'
+
+export const COMPLETION_CATEGORIES: { value: CompletionCategory; label: string }[] = [
+  { value: 'maintenance', label: 'Maintenance' },
+  { value: 'repair', label: 'Repair' },
+  { value: 'build', label: 'Build' }
+]
+
 export interface Project {
   id: string
   category: ProjectCategory
@@ -20,6 +28,7 @@ export interface Project {
   cost?: number
   invoicePath?: string
   photoPaths: string[]
+  targetCategory?: CompletionCategory
   createdAt: string
   updatedAt: string
 }
@@ -55,6 +64,7 @@ export interface NewProjectInput {
   cost?: number
   invoiceSourcePath?: string
   photoSourcePaths?: string[]
+  targetCategory?: CompletionCategory
 }
 
 export interface UpdateProjectInput {
@@ -68,6 +78,7 @@ export interface UpdateProjectInput {
   invoiceSourcePath?: string
   existingPhotoPaths: string[]
   newPhotoSourcePaths: string[]
+  targetCategory?: CompletionCategory
 }
 
 export function createEmptyHouseFile(name: string, info?: NewHouseInput): HouseFile {

@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import { NewProjectInput, ProjectCategory } from '../../../shared/houseFile'
+import {
+  COMPLETION_CATEGORIES,
+  CompletionCategory,
+  NewProjectInput,
+  ProjectCategory
+} from '../../../shared/houseFile'
 
 interface NewProjectModalProps {
   category: ProjectCategory
@@ -32,6 +37,7 @@ function NewProjectModal({
   const [invoiceFileName, setInvoiceFileName] = useState<string | undefined>(undefined)
   const [invoicePreview, setInvoicePreview] = useState<string | undefined>(undefined)
   const [photos, setPhotos] = useState<PickedPhoto[]>([])
+  const [targetCategory, setTargetCategory] = useState<CompletionCategory>('maintenance')
 
   const handleChooseInvoice = async (): Promise<void> => {
     const result = await window.api.pickInvoice()
@@ -64,7 +70,8 @@ function NewProjectModal({
       houseArea: houseArea || undefined,
       cost: cost ? Number(cost) : undefined,
       invoiceSourcePath: invoicePath,
-      photoSourcePaths: photos.map((photo) => photo.path)
+      photoSourcePaths: photos.map((photo) => photo.path),
+      targetCategory: category === 'in_progress' ? targetCategory : undefined
     })
   }
 
@@ -108,6 +115,21 @@ function NewProjectModal({
               onChange={(e) => setCost(e.target.value)}
             />
           </label>
+          {category === 'in_progress' && (
+            <label className="field">
+              <span>Move to when complete</span>
+              <select
+                value={targetCategory}
+                onChange={(e) => setTargetCategory(e.target.value as CompletionCategory)}
+              >
+                {COMPLETION_CATEGORIES.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <div className="field">
             <span>Invoice</span>
             {invoicePreview && <img className="photo-preview" src={invoicePreview} alt="Invoice" />}

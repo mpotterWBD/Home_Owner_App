@@ -15,7 +15,9 @@ const api = {
   addProject: (filePath: string, input: NewProjectInput) =>
     ipcRenderer.invoke('house-file:add-project', filePath, input),
   updateProject: (filePath: string, input: UpdateProjectInput) =>
-    ipcRenderer.invoke('house-file:update-project', filePath, input)
+    ipcRenderer.invoke('house-file:update-project', filePath, input),
+  completeProject: (filePath: string, projectId: string) =>
+    ipcRenderer.invoke('house-file:complete-project', filePath, projectId)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

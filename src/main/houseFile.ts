@@ -237,6 +237,7 @@ export function registerHouseFileHandlers(): void {
         cost: input.cost,
         invoicePath,
         photoPaths,
+        targetCategory: input.targetCategory,
         createdAt: now,
         updatedAt: now
       }
@@ -285,6 +286,25 @@ export function registerHouseFileHandlers(): void {
       project.cost = input.cost
       project.invoicePath = invoicePath
       project.photoPaths = photoPaths
+      project.targetCategory = input.targetCategory
+      project.updatedAt = new Date().toISOString()
+
+      await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8')
+      return { filePath, data }
+    }
+  )
+
+  ipcMain.handle(
+    'house-file:complete-project',
+    async (_event, filePath: string, projectId: string): Promise<HouseFileResult> => {
+      const raw = await readFile(filePath, 'utf-8')
+      const data = JSON.parse(raw) as HouseFile
+
+      const project = data.projects.find((p) => p.id === projectId)
+      if (!project) throw new Error('Project not found')
+
+      project.category = project.targetCategory ?? 'maintenance'
+      project.targetCategory = undefined
       project.updatedAt = new Date().toISOString()
 
       await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8')

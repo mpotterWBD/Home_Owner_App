@@ -28,7 +28,8 @@ describe('EditProjectModal', () => {
       createHouseFile: vi.fn(),
       openHouseFile: vi.fn(),
       addProject: vi.fn(),
-      updateProject: vi.fn()
+      updateProject: vi.fn(),
+      completeProject: vi.fn()
     }
   })
 
@@ -95,6 +96,28 @@ describe('EditProjectModal', () => {
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({ existingPhotoPaths: ['C:/photos/before2.jpg'] })
     )
+  })
+
+  it('shows the "move to when complete" dropdown pre-filled for an In Progress project', async () => {
+    const user = userEvent.setup()
+    const onSave = vi.fn()
+    const project = makeProject({ category: 'in_progress', targetCategory: 'build' })
+    render(<EditProjectModal project={project} onCancel={vi.fn()} onSave={onSave} />)
+
+    expect(screen.getByLabelText('Move to when complete')).toHaveValue('build')
+
+    await user.selectOptions(screen.getByLabelText('Move to when complete'), 'maintenance')
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ targetCategory: 'maintenance' })
+    )
+  })
+
+  it('does not show the "move to when complete" dropdown for a non In Progress project', () => {
+    render(<EditProjectModal project={makeProject({ category: 'repair' })} onCancel={vi.fn()} onSave={vi.fn()} />)
+
+    expect(screen.queryByLabelText('Move to when complete')).not.toBeInTheDocument()
   })
 
   it('calls onCancel when Cancel is clicked', async () => {
