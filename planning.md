@@ -3,7 +3,7 @@
 ## Context
 The user has been tracking home renovation/improvement projects (builder/contractor, cost, scope) in a spreadsheet. The goal is to replace this with a real, production-quality desktop application — starting simple (a spreadsheet-like grid) and growing into a fuller project tracker with photo galleries and attached quotes/documents. The app should be built with an eye toward eventual monetization (or at minimum a "support the developer" option), not just a personal script.
 
-Neither Node.js nor Rust is currently installed on the dev machine, which was a deciding factor in the framework discussion below.
+Neither Node.js nor Rust was installed on the dev machine at the time of this discussion, which was a deciding factor in the framework decision below. Node.js LTS has since been installed and the base Electron app scaffolded (see Status below).
 
 ## Decision: Framework — Electron + React + TypeScript
 Discussed alternatives: Electron, Tauri (Rust+React), .NET WPF/MAUI, Flutter desktop.
@@ -43,13 +43,16 @@ Storage: local SQLite file (via `better-sqlite3`) in the app's user-data directo
 - "Support the developer" panel linking out to a tip page (Buy Me a Coffee / Ko-fi / Stripe Payment Link) — no in-app payment handling needed to start. A full paid-license system would be a separate, later-scoped effort built on top of this.
 - Backup/restore: export the whole SQLite DB + attachments folder to a zip
 
+## Status
+- [x] Node.js LTS installed
+- [x] Base Electron + React + TypeScript app scaffolded (via electron-vite) and launching blank via `npm run dev`
+- [ ] SQLite setup + IPC handlers (CRUD, file storage)
+- [ ] Phase 1 MVP grid (ProjectGrid, ProjectEditor, AttachmentPicker)
+
 ## Next Steps
-1. Confirm Node.js is installed (or install it) before scaffolding.
-2. Scaffold the Electron + React + TypeScript project with:
-   - `src/` — React UI (ProjectGrid, ProjectEditor/Row, AttachmentPicker components)
-   - `electron/` — main process: SQLite setup, file-storage IPC handlers, CRUD IPC handlers
-   - a schema-init script for the SQLite tables above
-3. Build Phase 1 (MVP grid) end to end, verify with `npm run dev`.
+1. Add SQLite (`better-sqlite3`) and the Project/Builder/Attachment schema, with main-process IPC handlers for CRUD + file storage.
+2. Build the Phase 1 MVP grid UI (add/edit/delete rows, attach files) and wire it to the IPC handlers.
+3. Verify end to end with `npm run dev`.
 
 ## Verification
 - `npm run dev` launches the Electron window; manually add a project row, attach a photo/quote, restart the app, and confirm data persists.

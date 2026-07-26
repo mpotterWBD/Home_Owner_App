@@ -2,11 +2,12 @@ import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { APP_NAME } from '../shared/appInfo'
 
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    title: 'Home Owner App',
+    title: APP_NAME,
     width: 1200,
     height: 800,
     show: false,
