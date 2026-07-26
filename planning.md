@@ -23,14 +23,14 @@ Discussed alternatives: Electron, Tauri (Rust+React), .NET WPF/MAUI, Flutter des
 
 ~~Storage: local SQLite file (via `better-sqlite3`) in the app's user-data directory.~~ **Superseded — see below.**
 
-## Decision: Storage — document-based `.hmonr` JSON file
+## Decision: Storage — document-based `.hom` JSON file
 Rather than a single central SQLite database, the app is document-based like a normal desktop app (think Word/Excel): each house gets its own file the user creates and opens via **New** / **Open** in the toolbar.
 
-- File format: plain JSON, custom extension **`.hmonr`**
+- File format: plain JSON, custom extension **`.hom`**
 - Structure: `{ version, house: { name }, builders: [...], projects: [...] }` — projects nest their own `attachments` array (photo/quote/document references) rather than a separate relational table, since this is a document format, not a DB
-- Types + the `.hmonr` extension constant live in `src/shared/houseFile.ts` (single source of truth, used by both main and renderer)
+- Types + the `.hom` extension constant live in `src/shared/houseFile.ts` (single source of truth, used by both main and renderer)
 - Main process owns file I/O: `dialog.showSaveDialog` / `showOpenDialog` + `fs/promises` read/write, exposed to the renderer over IPC (`house-file:new`, `house-file:open`) via the preload bridge — the renderer never touches the filesystem directly
-- Attachments (photos/quotes) themselves stay as regular files on disk; the `.hmonr` JSON stores paths/references to them, not embedded binary data
+- Attachments (photos/quotes) themselves stay as regular files on disk; the `.hom` JSON stores paths/references to them, not embedded binary data
 - Tradeoff accepted: no multi-user concurrent access or partial-query performance benefits SQLite would give — a non-issue for a single-user local desktop app, and a plain JSON file is trivially readable/portable/backup-able by the user themselves
 
 ## Feature Phases

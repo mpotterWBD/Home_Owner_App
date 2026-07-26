@@ -9,6 +9,13 @@ npm install
 npm run dev
 ```
 
+## Test
+
+```bash
+npm test         # run once
+npm run test:watch
+```
+
 ## Build
 
 ```bash

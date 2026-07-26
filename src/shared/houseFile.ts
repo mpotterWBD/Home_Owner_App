@@ -1,4 +1,4 @@
-export const HOUSE_FILE_EXTENSION = 'hmonr'
+export const HOUSE_FILE_EXTENSION = 'hom'
 
 export interface Attachment {
   id: string

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NewHouseInput } from '../../../shared/houseFile'
+import { DEFAULT_MODAL_WIDTH, calculatePhotoModalWidth } from '../lib/modalWidth'
 
 interface NewHouseModalProps {
   onCancel: () => void
@@ -12,6 +13,7 @@ function NewHouseModal({ onCancel, onCreate }: NewHouseModalProps): React.JSX.El
   const [state, setState] = useState('')
   const [photoPath, setPhotoPath] = useState<string | undefined>(undefined)
   const [photoPreview, setPhotoPreview] = useState<string | undefined>(undefined)
+  const [modalWidth, setModalWidth] = useState(DEFAULT_MODAL_WIDTH)
 
   const handleChoosePhoto = async (): Promise<void> => {
     const result = await window.api.pickImage()
@@ -21,6 +23,11 @@ function NewHouseModal({ onCancel, onCreate }: NewHouseModalProps): React.JSX.El
     }
   }
 
+  const handlePhotoLoad = (e: React.SyntheticEvent<HTMLImageElement>): void => {
+    const { naturalWidth, naturalHeight } = e.currentTarget
+    setModalWidth(calculatePhotoModalWidth(naturalWidth, naturalHeight))
+  }
+
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault()
     onCreate({ address, city, state, photoPath })
@@ -28,7 +35,7 @@ function NewHouseModal({ onCancel, onCreate }: NewHouseModalProps): React.JSX.El
 
   return (
     <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal" style={{ width: modalWidth }} onClick={(e) => e.stopPropagation()}>
         <h2>New house</h2>
         <form onSubmit={handleSubmit}>
           <label className="field">
@@ -45,8 +52,15 @@ function NewHouseModal({ onCancel, onCreate }: NewHouseModalProps): React.JSX.El
           </label>
           <div className="field">
             <span>Photo</span>
-            {photoPreview && <img className="photo-preview" src={photoPreview} alt="House" />}
-            <button type="button" className="btn" onClick={handleChoosePhoto}>
+            {photoPreview && (
+              <img
+                className="photo-preview"
+                src={photoPreview}
+                alt="House"
+                onLoad={handlePhotoLoad}
+              />
+            )}
+            <button type="button" className="btn btn-full" onClick={handleChoosePhoto}>
               Choose photo
             </button>
           </div>
