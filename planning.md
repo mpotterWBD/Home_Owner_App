@@ -39,11 +39,13 @@ interface Project {
   id: string
   category: 'in_progress' | 'maintenance' | 'repair' | 'build'
   description: string
+  notes?: string         // longer description, shown only in the detail panel
   date?: string
   company?: string       // free text, not a Builder FK — simpler until a builder-management screen is actually needed
   houseArea?: string     // e.g. "Kitchen", "Roof" — which part of the house this project touches
   cost?: number
   invoicePath?: string   // single attachment (image or PDF), copied into the house file's .attachments folder
+  photoPaths: string[]   // project pictures (distinct from the invoice), shown in the detail panel gallery
   createdAt: string
   updatedAt: string
 }
@@ -52,9 +54,12 @@ interface Project {
 - Each category section has its own "+" button that opens the same `NewProjectModal`, pre-scoped to that category (no category dropdown needed in the form)
 
 ## Main Interface
+- Two-column workspace: category list on the left, a detail panel on the right (`.workspace` in `main.css`) — both stretch to the same height via flexbox, so the detail panel scrolls internally if its content is taller than the categories
 - Content area shows one collapsible row per category (In Progress / Maintenance / Repair / Build), each expandable to show its projects
 - Row width and gap are CSS custom properties (`--category-width`, `--category-gap` on `.category-list` in `main.css`) so they're easy to retune
-- Clicking a category's "+" opens `NewProjectModal` (Description, Date, Company, Part of the house, Invoice file picker, Cost); submitting calls `house-file:add-project` which appends to the currently open `.hom` file and copies the invoice into its attachments folder
+- Clicking a category's "+" opens `NewProjectModal` (Description, Notes, Date, Company, Part of the house, Cost, Invoice file picker, Project pictures multi-picker); submitting calls `house-file:add-project` which appends to the currently open `.hom` file and copies the invoice + pictures into its attachments folder
+- Clicking anywhere on a project card selects it (green border) and populates the detail panel with the full info — everything shown on the card plus `notes` and the photo gallery, but not the invoice thumbnail (that stays only on the card). Clicking the invoice thumbnail itself opens the file with the OS default viewer instead of selecting the card (`stopPropagation` in `InvoiceThumbnail`)
+- PDF invoice thumbnails render an actual shrunken preview of page 1 via `pdfjs-dist` (pinned to 4.10.38 — the 6.x line uses a JS engine feature Electron 39's Chromium doesn't support yet)
 
 ## Feature Phases
 

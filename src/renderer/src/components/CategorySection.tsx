@@ -6,13 +6,17 @@ import InvoiceThumbnail from './InvoiceThumbnail'
 interface CategorySectionProps {
   title: string
   projects: Project[]
+  selectedProjectId: string | null
   onAddProject: () => void
+  onSelectProject: (id: string) => void
 }
 
 function CategorySection({
   title,
   projects,
-  onAddProject
+  selectedProjectId,
+  onAddProject,
+  onSelectProject
 }: CategorySectionProps): React.JSX.Element {
   const [expanded, setExpanded] = useState(false)
 
@@ -41,7 +45,11 @@ function CategorySection({
           ) : (
             <ul className="project-list">
               {projects.map((project) => (
-                <li key={project.id} className="project-card">
+                <li
+                  key={project.id}
+                  className={`project-card${project.id === selectedProjectId ? ' project-card-selected' : ''}`}
+                  onClick={() => onSelectProject(project.id)}
+                >
                   <InvoiceThumbnail invoicePath={project.invoicePath} />
                   <div className="project-details">
                     <p>

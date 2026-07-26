@@ -7,12 +7,15 @@ describe('NewProjectModal', () => {
   beforeEach(() => {
     window.api = {
       pickImage: vi.fn(),
+      pickImages: vi.fn(),
       pickInvoice: vi.fn(),
       readInvoice: vi.fn(),
+      readPhoto: vi.fn(),
       openInvoice: vi.fn(),
       createHouseFile: vi.fn(),
       openHouseFile: vi.fn(),
-      addProject: vi.fn()
+      addProject: vi.fn(),
+      updateProject: vi.fn()
     }
   })
 
@@ -38,11 +41,13 @@ describe('NewProjectModal', () => {
     expect(onCreate).toHaveBeenCalledWith({
       category: 'repair',
       description: 'Replaced water heater',
+      notes: undefined,
       date: '2026-03-14',
       company: 'Acme Plumbing',
       houseArea: 'Basement',
       cost: 850,
-      invoiceSourcePath: undefined
+      invoiceSourcePath: undefined,
+      photoSourcePaths: []
     })
   })
 
@@ -116,6 +121,55 @@ describe('NewProjectModal', () => {
     await user.click(screen.getByRole('button', { name: 'Create' }))
     expect(onCreate).toHaveBeenCalledWith(
       expect.objectContaining({ invoiceSourcePath: 'C:/invoices/receipt.pdf' })
+    )
+  })
+
+  it('includes the notes field when provided', async () => {
+    const user = userEvent.setup()
+    const onCreate = vi.fn()
+    render(
+      <NewProjectModal
+        category="repair"
+        categoryLabel="Repair"
+        onCancel={vi.fn()}
+        onCreate={onCreate}
+      />
+    )
+
+    await user.type(screen.getByLabelText('Description'), 'Replaced water heater')
+    await user.type(screen.getByLabelText('Notes'), 'Old unit was leaking from the base.')
+    await user.click(screen.getByRole('button', { name: 'Create' }))
+
+    expect(onCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ notes: 'Old unit was leaking from the base.' })
+    )
+  })
+
+  it('lets the user pick multiple project pictures and remove one before submitting', async () => {
+    const user = userEvent.setup()
+    const onCreate = vi.fn()
+    vi.mocked(window.api.pickImages).mockResolvedValue([
+      { path: 'C:/photos/before.jpg', dataUrl: 'data:image/jpeg;base64,AAA' },
+      { path: 'C:/photos/after.jpg', dataUrl: 'data:image/jpeg;base64,BBB' }
+    ])
+    render(
+      <NewProjectModal
+        category="repair"
+        categoryLabel="Repair"
+        onCancel={vi.fn()}
+        onCreate={onCreate}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Choose pictures' }))
+    expect(await screen.findAllByRole('button', { name: 'Remove picture' })).toHaveLength(2)
+
+    await user.click(screen.getAllByRole('button', { name: 'Remove picture' })[0])
+    expect(screen.getAllByRole('button', { name: 'Remove picture' })).toHaveLength(1)
+
+    await user.click(screen.getByRole('button', { name: 'Create' }))
+    expect(onCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ photoSourcePaths: ['C:/photos/after.jpg'] })
     )
   })
 

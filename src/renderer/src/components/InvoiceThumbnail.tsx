@@ -83,7 +83,8 @@ function InvoiceThumbnail({ invoicePath }: InvoiceThumbnailProps): React.JSX.Ele
 
   const openable = status === 'image' || status === 'pdf' || status === 'error'
 
-  const handleClick = (): void => {
+  const handleClick = (e: React.MouseEvent): void => {
+    e.stopPropagation()
     if (invoicePath && openable) {
       window.api.openInvoice(invoicePath)
     }

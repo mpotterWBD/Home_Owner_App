@@ -8,6 +8,7 @@ import {
   createEmptyHouseFile,
   NewHouseInput,
   NewProjectInput,
+  UpdateProjectInput,
   Project
 } from '../shared/houseFile'
 
@@ -63,6 +64,34 @@ export function registerHouseFileHandlers(): void {
     const buffer = await readFile(path)
     const dataUrl = `data:${mime};base64,${buffer.toString('base64')}`
     return { path, dataUrl }
+  })
+
+  ipcMain.handle('house-file:pick-images', async (): Promise<ImagePickResult[]> => {
+    const window = BrowserWindow.getFocusedWindow()
+    const options: OpenDialogOptions = {
+      title: 'Choose Pictures',
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp'] }]
+    }
+    const result = window
+      ? await dialog.showOpenDialog(window, options)
+      : await dialog.showOpenDialog(options)
+    if (result.canceled || result.filePaths.length === 0) return []
+
+    const previews: ImagePickResult[] = []
+    for (const path of result.filePaths) {
+      const mime = IMAGE_MIME_TYPES[extname(path).toLowerCase()] ?? 'application/octet-stream'
+      const buffer = await readFile(path)
+      previews.push({ path, dataUrl: `data:${mime};base64,${buffer.toString('base64')}` })
+    }
+    return previews
+  })
+
+  ipcMain.handle('house-file:read-photo', async (_event, photoPath: string): Promise<{ dataUrl?: string }> => {
+    const mime = IMAGE_MIME_TYPES[extname(photoPath).toLowerCase()]
+    if (!mime) return {}
+    const buffer = await readFile(photoPath)
+    return { dataUrl: `data:${mime};base64,${buffer.toString('base64')}` }
   })
 
   ipcMain.handle('house-file:pick-invoice', async (): Promise<FilePickResult | null> => {
@@ -139,6 +168,10 @@ export function registerHouseFileHandlers(): void {
     const filePath = result.filePaths[0]
     const raw = await readFile(filePath, 'utf-8')
     const data = JSON.parse(raw) as HouseFile
+    data.projects = data.projects.map((project) => ({
+      ...project,
+      photoPaths: project.photoPaths ?? []
+    }))
     return { filePath, data }
   })
 
@@ -180,21 +213,80 @@ export function registerHouseFileHandlers(): void {
         invoicePath = destPath
       }
 
+      const photoPaths: string[] = []
+      if (input.photoSourcePaths && input.photoSourcePaths.length > 0) {
+        const dir = attachmentsDirFor(filePath)
+        await mkdir(dir, { recursive: true })
+        for (let i = 0; i < input.photoSourcePaths.length; i++) {
+          const source = input.photoSourcePaths[i]
+          const destPath = join(dir, `photo-${Date.now()}-${i}${extname(source)}`)
+          await copyFile(source, destPath)
+          photoPaths.push(destPath)
+        }
+      }
+
       const now = new Date().toISOString()
       const project: Project = {
         id: randomUUID(),
         category: input.category,
         description: input.description,
+        notes: input.notes,
         date: input.date,
         company: input.company,
         houseArea: input.houseArea,
         cost: input.cost,
         invoicePath,
+        photoPaths,
         createdAt: now,
         updatedAt: now
       }
 
       data.projects.push(project)
+      await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8')
+      return { filePath, data }
+    }
+  )
+
+  ipcMain.handle(
+    'house-file:update-project',
+    async (_event, filePath: string, input: UpdateProjectInput): Promise<HouseFileResult> => {
+      const raw = await readFile(filePath, 'utf-8')
+      const data = JSON.parse(raw) as HouseFile
+
+      const project = data.projects.find((p) => p.id === input.id)
+      if (!project) throw new Error('Project not found')
+
+      let invoicePath = project.invoicePath
+      if (input.invoiceSourcePath) {
+        const dir = attachmentsDirFor(filePath)
+        await mkdir(dir, { recursive: true })
+        const destPath = join(dir, `invoice-${Date.now()}${extname(input.invoiceSourcePath)}`)
+        await copyFile(input.invoiceSourcePath, destPath)
+        invoicePath = destPath
+      }
+
+      const photoPaths = [...input.existingPhotoPaths]
+      if (input.newPhotoSourcePaths.length > 0) {
+        const dir = attachmentsDirFor(filePath)
+        await mkdir(dir, { recursive: true })
+        for (let i = 0; i < input.newPhotoSourcePaths.length; i++) {
+          const source = input.newPhotoSourcePaths[i]
+          const destPath = join(dir, `photo-${Date.now()}-${i}${extname(source)}`)
+          await copyFile(source, destPath)
+          photoPaths.push(destPath)
+        }
+      }
+
+      project.description = input.description
+      project.notes = input.notes
+      project.date = input.date
+      project.company = input.company
+      project.houseArea = input.houseArea
+      project.cost = input.cost
+      project.invoicePath = invoicePath
+      project.photoPaths = photoPaths
+      project.updatedAt = new Date().toISOString()
+
       await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8')
       return { filePath, data }
     }

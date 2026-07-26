@@ -7,12 +7,15 @@ describe('InvoiceThumbnail', () => {
   beforeEach(() => {
     window.api = {
       pickImage: vi.fn(),
+      pickImages: vi.fn(),
       pickInvoice: vi.fn(),
       readInvoice: vi.fn(),
+      readPhoto: vi.fn(),
       openInvoice: vi.fn(),
       createHouseFile: vi.fn(),
       openHouseFile: vi.fn(),
-      addProject: vi.fn()
+      addProject: vi.fn(),
+      updateProject: vi.fn()
     }
   })
 

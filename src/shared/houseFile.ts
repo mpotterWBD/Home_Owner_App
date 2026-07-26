@@ -13,11 +13,13 @@ export interface Project {
   id: string
   category: ProjectCategory
   description: string
+  notes?: string
   date?: string
   company?: string
   houseArea?: string
   cost?: number
   invoicePath?: string
+  photoPaths: string[]
   createdAt: string
   updatedAt: string
 }
@@ -46,11 +48,26 @@ export interface NewHouseInput {
 export interface NewProjectInput {
   category: ProjectCategory
   description: string
+  notes?: string
   date?: string
   company?: string
   houseArea?: string
   cost?: number
   invoiceSourcePath?: string
+  photoSourcePaths?: string[]
+}
+
+export interface UpdateProjectInput {
+  id: string
+  description: string
+  notes?: string
+  date?: string
+  company?: string
+  houseArea?: string
+  cost?: number
+  invoiceSourcePath?: string
+  existingPhotoPaths: string[]
+  newPhotoSourcePaths: string[]
 }
 
 export function createEmptyHouseFile(name: string, info?: NewHouseInput): HouseFile {

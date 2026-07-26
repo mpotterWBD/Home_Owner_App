@@ -1,5 +1,5 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
-import { HouseFile, NewHouseInput, NewProjectInput } from '../shared/houseFile'
+import { HouseFile, NewHouseInput, NewProjectInput, UpdateProjectInput } from '../shared/houseFile'
 
 export interface HouseFileResult {
   filePath: string
@@ -22,14 +22,21 @@ export interface InvoicePreview {
   dataUrl?: string
 }
 
+export interface PhotoPreview {
+  dataUrl?: string
+}
+
 export interface Api {
   createHouseFile: (input: NewHouseInput) => Promise<HouseFileResult | null>
   openHouseFile: () => Promise<HouseFileResult | null>
   pickImage: () => Promise<ImagePickResult | null>
+  pickImages: () => Promise<ImagePickResult[]>
   pickInvoice: () => Promise<FilePickResult | null>
   readInvoice: (invoicePath: string) => Promise<InvoicePreview>
+  readPhoto: (photoPath: string) => Promise<PhotoPreview>
   openInvoice: (invoicePath: string) => Promise<void>
   addProject: (filePath: string, input: NewProjectInput) => Promise<HouseFileResult>
+  updateProject: (filePath: string, input: UpdateProjectInput) => Promise<HouseFileResult>
 }
 
 declare global {
