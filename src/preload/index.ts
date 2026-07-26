@@ -1,8 +1,13 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import type { NewHouseInput } from '../shared/houseFile'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  createHouseFile: (input: NewHouseInput) => ipcRenderer.invoke('house-file:create', input),
+  openHouseFile: () => ipcRenderer.invoke('house-file:open'),
+  pickImage: () => ipcRenderer.invoke('house-file:pick-image')
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

@@ -16,12 +16,22 @@ Discussed alternatives: Electron, Tauri (Rust+React), .NET WPF/MAUI, Flutter des
 - Tradeoff accepted: larger installer (~150MB+) and higher idle memory vs. Tauri — a non-issue for a project-tracker app with a handful of users.
 - Tauri remains a viable future migration if install size/performance ever becomes a real complaint, but does not block getting started now.
 
-## Data Model (v1)
+## Data Model (v1) — Superseded storage decision
 - **Project**: id, name, builder_id (FK, nullable), cost (numeric), scope/description (text), category (text, e.g. Kitchen/Bath/Roof/Exterior), status (Planned/In Progress/Complete), start_date, end_date, notes, created_at, updated_at
 - **Builder/Contractor**: id, name, contact info (phone/email), notes — kept as its own table so one builder can be linked across multiple projects and edited in one place
 - **Attachment**: id, project_id (FK), kind (photo | quote | document), file_path, original_filename, uploaded_at
 
-Storage: local SQLite file (via `better-sqlite3`) in the app's user-data directory. Attached files (photos, quote PDFs) are copied into an app-managed folder and referenced by path in the DB — no external server, everything stays on the user's machine for v1.
+~~Storage: local SQLite file (via `better-sqlite3`) in the app's user-data directory.~~ **Superseded — see below.**
+
+## Decision: Storage — document-based `.hmonr` JSON file
+Rather than a single central SQLite database, the app is document-based like a normal desktop app (think Word/Excel): each house gets its own file the user creates and opens via **New** / **Open** in the toolbar.
+
+- File format: plain JSON, custom extension **`.hmonr`**
+- Structure: `{ version, house: { name }, builders: [...], projects: [...] }` — projects nest their own `attachments` array (photo/quote/document references) rather than a separate relational table, since this is a document format, not a DB
+- Types + the `.hmonr` extension constant live in `src/shared/houseFile.ts` (single source of truth, used by both main and renderer)
+- Main process owns file I/O: `dialog.showSaveDialog` / `showOpenDialog` + `fs/promises` read/write, exposed to the renderer over IPC (`house-file:new`, `house-file:open`) via the preload bridge — the renderer never touches the filesystem directly
+- Attachments (photos/quotes) themselves stay as regular files on disk; the `.hmonr` JSON stores paths/references to them, not embedded binary data
+- Tradeoff accepted: no multi-user concurrent access or partial-query performance benefits SQLite would give — a non-issue for a single-user local desktop app, and a plain JSON file is trivially readable/portable/backup-able by the user themselves
 
 ## Feature Phases
 
