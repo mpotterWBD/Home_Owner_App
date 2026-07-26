@@ -16,30 +16,52 @@ Discussed alternatives: Electron, Tauri (Rust+React), .NET WPF/MAUI, Flutter des
 - Tradeoff accepted: larger installer (~150MB+) and higher idle memory vs. Tauri — a non-issue for a project-tracker app with a handful of users.
 - Tauri remains a viable future migration if install size/performance ever becomes a real complaint, but does not block getting started now.
 
-## Data Model (v1) — Superseded storage decision
-- **Project**: id, name, builder_id (FK, nullable), cost (numeric), scope/description (text), category (text, e.g. Kitchen/Bath/Roof/Exterior), status (Planned/In Progress/Complete), start_date, end_date, notes, created_at, updated_at
-- **Builder/Contractor**: id, name, contact info (phone/email), notes — kept as its own table so one builder can be linked across multiple projects and edited in one place
-- **Attachment**: id, project_id (FK), kind (photo | quote | document), file_path, original_filename, uploaded_at
-
+## Data Model (v1) — superseded draft
+~~**Project**: id, name, builder_id (FK, nullable), cost (numeric), scope/description (text), category (text, e.g. Kitchen/Bath/Roof/Exterior), status (Planned/In Progress/Complete), start_date, end_date, notes, created_at, updated_at~~
+~~**Builder/Contractor**: id, name, contact info (phone/email), notes — kept as its own table so one builder can be linked across multiple projects and edited in one place~~
+~~**Attachment**: id, project_id (FK), kind (photo | quote | document), file_path, original_filename, uploaded_at~~
 ~~Storage: local SQLite file (via `better-sqlite3`) in the app's user-data directory.~~ **Superseded — see below.**
 
 ## Decision: Storage — document-based `.hom` JSON file
 Rather than a single central SQLite database, the app is document-based like a normal desktop app (think Word/Excel): each house gets its own file the user creates and opens via **New** / **Open** in the toolbar.
 
 - File format: plain JSON, custom extension **`.hom`**
-- Structure: `{ version, house: { name }, builders: [...], projects: [...] }` — projects nest their own `attachments` array (photo/quote/document references) rather than a separate relational table, since this is a document format, not a DB
+- Structure: `{ version, house: { name, address, city, state, photoPath }, projects: [...] }`
 - Types + the `.hom` extension constant live in `src/shared/houseFile.ts` (single source of truth, used by both main and renderer)
-- Main process owns file I/O: `dialog.showSaveDialog` / `showOpenDialog` + `fs/promises` read/write, exposed to the renderer over IPC (`house-file:new`, `house-file:open`) via the preload bridge — the renderer never touches the filesystem directly
-- Attachments (photos/quotes) themselves stay as regular files on disk; the `.hom` JSON stores paths/references to them, not embedded binary data
+- Main process owns file I/O: `dialog.showSaveDialog` / `showOpenDialog` + `fs/promises` read/write, exposed to the renderer over IPC (`house-file:create`, `house-file:open`, `house-file:add-project`) via the preload bridge — the renderer never touches the filesystem directly
+- Attachments (house photo, invoices) stay as regular files on disk in a `<name>.attachments` folder next to the `.hom` file; the JSON stores paths/references to them, not embedded binary data
 - Tradeoff accepted: no multi-user concurrent access or partial-query performance benefits SQLite would give — a non-issue for a single-user local desktop app, and a plain JSON file is trivially readable/portable/backup-able by the user themselves
+
+## Decision: Project schema (v1, implemented)
+No separate Builder entity or generic Attachment table — kept as simple as what's actually used:
+```ts
+interface Project {
+  id: string
+  category: 'in_progress' | 'maintenance' | 'repair' | 'build'
+  description: string
+  date?: string
+  company?: string       // free text, not a Builder FK — simpler until a builder-management screen is actually needed
+  houseArea?: string     // e.g. "Kitchen", "Roof" — which part of the house this project touches
+  cost?: number
+  invoicePath?: string   // single attachment (image or PDF), copied into the house file's .attachments folder
+  createdAt: string
+  updatedAt: string
+}
+```
+- The four `category` values double as the UI grouping (see Main Interface below) — each is a collapsible section in the content area, not a separate concept
+- Each category section has its own "+" button that opens the same `NewProjectModal`, pre-scoped to that category (no category dropdown needed in the form)
+
+## Main Interface
+- Content area shows one collapsible row per category (In Progress / Maintenance / Repair / Build), each expandable to show its projects
+- Row width and gap are CSS custom properties (`--category-width`, `--category-gap` on `.category-list` in `main.css`) so they're easy to retune
+- Clicking a category's "+" opens `NewProjectModal` (Description, Date, Company, Part of the house, Invoice file picker, Cost); submitting calls `house-file:add-project` which appends to the currently open `.hom` file and copies the invoice into its attachments folder
 
 ## Feature Phases
 
 **Phase 1 — MVP (spreadsheet replacement)**
-- Grid view of all projects: add/edit/delete rows inline; columns for name/builder/cost/scope/category/status/dates
-- Local SQLite persistence; app reopens to last state
-- Attach files (photos + quote docs) to a project; list/thumbnail per row, click to open in default OS viewer
-- CSV import (to migrate the user's existing spreadsheet) and CSV export
+- Category-grouped project list (see Main Interface above): add projects with description/cost/company/house area/invoice — done
+- Local `.hom` file persistence — done
+- Still open: editing/deleting existing projects, CSV import (to migrate the user's existing spreadsheet) and CSV export
 
 **Phase 2 — Project tracking depth**
 - Dedicated project detail view with photo gallery + inline PDF preview for attached documents
@@ -55,15 +77,19 @@ Rather than a single central SQLite database, the app is document-based like a n
 
 ## Status
 - [x] Node.js LTS installed
-- [x] Base Electron + React + TypeScript app scaffolded (via electron-vite) and launching blank via `npm run dev`
-- [ ] SQLite setup + IPC handlers (CRUD, file storage)
-- [ ] Phase 1 MVP grid (ProjectGrid, ProjectEditor, AttachmentPicker)
+- [x] Base Electron + React + TypeScript app scaffolded (via electron-vite)
+- [x] `.hom` file create/open (house address/city/state/photo)
+- [x] Category sections with add-project flow (description/date/company/house area/cost/invoice)
+- [x] Vitest + React Testing Library set up, tests passing
+- [ ] Editing/deleting existing projects
+- [ ] CSV import/export
 
 ## Next Steps
-1. Add SQLite (`better-sqlite3`) and the Project/Builder/Attachment schema, with main-process IPC handlers for CRUD + file storage.
-2. Build the Phase 1 MVP grid UI (add/edit/delete rows, attach files) and wire it to the IPC handlers.
-3. Verify end to end with `npm run dev`.
+1. Add editing and deleting of existing projects within a category.
+2. CSV import (migrate the user's existing spreadsheet) and export.
+3. Phase 2 items (photo gallery, PDF preview, sorting/filtering, cost totals) once the above is solid.
 
 ## Verification
-- `npm run dev` launches the Electron window; manually add a project row, attach a photo/quote, restart the app, and confirm data persists.
+- `npm run dev` launches the Electron window; create a house file, add a project to a category with an invoice attached, restart the app (re-open the file), and confirm it persists.
+- `npm test` runs the unit/component test suite.
 - `npm run build` produces a Windows installer that installs and runs standalone on a clean check.

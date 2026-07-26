@@ -8,8 +8,12 @@ describe('NewHouseModal', () => {
   beforeEach(() => {
     window.api = {
       pickImage: vi.fn(),
+      pickInvoice: vi.fn(),
+      readInvoice: vi.fn(),
+      openInvoice: vi.fn(),
       createHouseFile: vi.fn(),
-      openHouseFile: vi.fn()
+      openHouseFile: vi.fn(),
+      addProject: vi.fn()
     }
   })
 

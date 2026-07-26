@@ -3,11 +3,12 @@ import { NewHouseInput } from '../../../shared/houseFile'
 import { DEFAULT_MODAL_WIDTH, calculatePhotoModalWidth } from '../lib/modalWidth'
 
 interface NewHouseModalProps {
+  error?: string | null
   onCancel: () => void
   onCreate: (input: NewHouseInput) => void
 }
 
-function NewHouseModal({ onCancel, onCreate }: NewHouseModalProps): React.JSX.Element {
+function NewHouseModal({ error, onCancel, onCreate }: NewHouseModalProps): React.JSX.Element {
   const [address, setAddress] = useState('')
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
@@ -37,6 +38,7 @@ function NewHouseModal({ onCancel, onCreate }: NewHouseModalProps): React.JSX.El
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal" style={{ width: modalWidth }} onClick={(e) => e.stopPropagation()}>
         <h2>New house</h2>
+        {error && <p className="modal-error">{error}</p>}
         <form onSubmit={handleSubmit}>
           <label className="field">
             <span>Address</span>

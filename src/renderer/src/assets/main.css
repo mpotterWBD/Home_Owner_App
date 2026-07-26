@@ -74,6 +74,144 @@
 .file-status {
   font-size: 13px;
   color: var(--ev-c-text-2);
+  margin-bottom: 24px;
+}
+
+.category-list {
+  /* Knobs: adjust these two to resize the category rows and the gap between them */
+  --category-width: 1000px;
+  --category-gap: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--category-gap);
+  max-width: var(--category-width);
+  margin: 0 auto;
+}
+
+.category {
+  border: 1px solid var(--ev-c-gray-3);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-background-soft);
+}
+
+.category-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 14px 18px;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font-size: 16px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.category-toggle:hover {
+  background: var(--ev-c-gray-3);
+}
+
+.category-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  border-left: 1px solid var(--ev-c-gray-3);
+  color: var(--color-text);
+  cursor: pointer;
+  align-self: stretch;
+}
+
+.category-add:hover {
+  background: var(--ev-c-gray-3);
+}
+
+.category-body {
+  padding: 14px 18px;
+  border-top: 1px solid var(--ev-c-gray-3);
+  color: var(--ev-c-text-2);
+  font-size: 14px;
+}
+
+.category-body .empty {
+  color: var(--ev-c-text-2);
+}
+
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project-card {
+  display: flex;
+  gap: 16px;
+  padding: 12px;
+  border: 1px solid var(--ev-c-gray-3);
+  border-radius: 6px;
+}
+
+.invoice-thumb {
+  flex-shrink: 0;
+  width: 120px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ev-c-gray-3);
+  border-radius: 4px;
+  background: var(--ev-c-black-mute);
+  color: var(--ev-c-text-2);
+  overflow: hidden;
+}
+
+.invoice-thumb img,
+.invoice-thumb canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.invoice-thumb-clickable {
+  cursor: pointer;
+}
+
+.invoice-thumb-clickable:hover {
+  border-color: var(--ev-c-gray-1);
+}
+
+.project-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.project-label {
+  color: var(--ev-c-text-2);
+}
+
+.project-cost {
+  color: #e5484d;
+}
+
+.file-chip {
+  font-size: 13px;
+  color: var(--ev-c-text-2);
+  margin-bottom: 8px;
 }
 
 .modal-overlay {
@@ -92,6 +230,12 @@
   border-radius: 8px;
   padding: 24px;
   transition: width 150ms ease;
+}
+
+.modal-error {
+  font-size: 13px;
+  color: #e5484d;
+  margin-bottom: 12px;
 }
 
 .modal h2 {

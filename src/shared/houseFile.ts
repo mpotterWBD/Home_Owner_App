@@ -1,32 +1,23 @@
 export const HOUSE_FILE_EXTENSION = 'hom'
 
-export interface Attachment {
-  id: string
-  kind: 'photo' | 'quote' | 'document'
-  filePath: string
-  originalFileName: string
-  addedAt: string
-}
+export type ProjectCategory = 'in_progress' | 'maintenance' | 'repair' | 'build'
 
-export interface Builder {
-  id: string
-  name: string
-  contact?: string
-  notes?: string
-}
+export const PROJECT_CATEGORIES: { value: ProjectCategory; label: string }[] = [
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'maintenance', label: 'Maintenance' },
+  { value: 'repair', label: 'Repair' },
+  { value: 'build', label: 'Build' }
+]
 
 export interface Project {
   id: string
-  name: string
-  builderId?: string
+  category: ProjectCategory
+  description: string
+  date?: string
+  company?: string
+  houseArea?: string
   cost?: number
-  scope?: string
-  category?: string
-  status: 'planned' | 'in_progress' | 'complete'
-  startDate?: string
-  endDate?: string
-  notes?: string
-  attachments: Attachment[]
+  invoicePath?: string
   createdAt: string
   updatedAt: string
 }
@@ -42,7 +33,6 @@ export interface HouseInfo {
 export interface HouseFile {
   version: 1
   house: HouseInfo
-  builders: Builder[]
   projects: Project[]
 }
 
@@ -51,6 +41,16 @@ export interface NewHouseInput {
   city?: string
   state?: string
   photoPath?: string
+}
+
+export interface NewProjectInput {
+  category: ProjectCategory
+  description: string
+  date?: string
+  company?: string
+  houseArea?: string
+  cost?: number
+  invoiceSourcePath?: string
 }
 
 export function createEmptyHouseFile(name: string, info?: NewHouseInput): HouseFile {
@@ -63,7 +63,6 @@ export function createEmptyHouseFile(name: string, info?: NewHouseInput): HouseF
       state: info?.state,
       photoPath: info?.photoPath
     },
-    builders: [],
     projects: []
   }
 }

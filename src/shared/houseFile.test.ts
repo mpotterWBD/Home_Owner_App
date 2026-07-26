@@ -7,7 +7,6 @@ describe('createEmptyHouseFile', () => {
 
     expect(file.version).toBe(1)
     expect(file.house.name).toBe('123 Main St')
-    expect(file.builders).toEqual([])
     expect(file.projects).toEqual([])
   })
 
