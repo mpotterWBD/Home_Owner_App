@@ -1,7 +1,7 @@
 {
-  "name": "home-owner-app",
+  "name": "home-bound-explorer",
   "version": "1.0.0",
-  "description": "Home Owner App - track home renovation projects, builders, costs, and attachments",
+  "description": "Home Bound Explorer - track home renovation projects, builders, costs, and attachments",
   "main": "./out/main/index.js",
   "author": "Mike Potter",
   "scripts": {

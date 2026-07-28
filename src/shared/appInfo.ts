@@ -1,1 +1,1 @@
-export const APP_NAME = 'Home Owner App'
+export const APP_NAME = 'Home Bound Explorer'

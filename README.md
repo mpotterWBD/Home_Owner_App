@@ -1,4 +1,4 @@
-# Home Owner App
+# Home Bound Explorer
 
 A desktop app (Electron + React + TypeScript) for tracking home renovation projects: builder, cost, scope, photos, and quotes. See [planning.md](planning.md) for the full plan.
 

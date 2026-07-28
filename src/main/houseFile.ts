@@ -11,6 +11,7 @@ import {
   UpdateProjectInput,
   Project
 } from '../shared/houseFile'
+import { APP_NAME } from '../shared/appInfo'
 
 export interface HouseFileResult {
   filePath: string
@@ -123,7 +124,7 @@ export function registerHouseFileHandlers(): void {
       const options = {
         title: 'Create New House File',
         defaultPath: `My House.${HOUSE_FILE_EXTENSION}`,
-        filters: [{ name: 'Home Owner App File', extensions: [HOUSE_FILE_EXTENSION] }]
+        filters: [{ name: `${APP_NAME} File`, extensions: [HOUSE_FILE_EXTENSION] }]
       }
       const result = window
         ? await dialog.showSaveDialog(window, options)
@@ -158,7 +159,7 @@ export function registerHouseFileHandlers(): void {
     const options: OpenDialogOptions = {
       title: 'Open House File',
       properties: ['openFile'],
-      filters: [{ name: 'Home Owner App File', extensions: [HOUSE_FILE_EXTENSION] }]
+      filters: [{ name: `${APP_NAME} File`, extensions: [HOUSE_FILE_EXTENSION] }]
     }
     const result = window
       ? await dialog.showOpenDialog(window, options)

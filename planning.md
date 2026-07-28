@@ -1,4 +1,4 @@
-# Home Owner App — Planning
+# Home Bound Explorer — Planning
 
 ## Context
 The user has been tracking home renovation/improvement projects (builder/contractor, cost, scope) in a spreadsheet. The goal is to replace this with a real, production-quality desktop application — starting simple (a spreadsheet-like grid) and growing into a fuller project tracker with photo galleries and attached quotes/documents. The app should be built with an eye toward eventual monetization (or at minimum a "support the developer" option), not just a personal script.

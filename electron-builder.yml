@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: home-owner-app
+productName: Home Bound Explorer
 directories:
   buildResources: build
 files:
@@ -12,7 +12,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: home-owner-app
+  executableName: home-bound-explorer
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
