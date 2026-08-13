@@ -165,6 +165,39 @@ The app is designed around a document-based workflow:
 
 This means the app is meant to be used as a local desktop document store rather than a hosted database app.
 
+## Toolbar Color Knobs
+
+To change the top File bar colors, go to:
+
+- `src/renderer/src/assets/main.css`
+
+Then jump to the `TOOLBAR COLOR KNOBS` block (currently around line 63) and edit these exact lines:
+
+- line 68: `--toolbar-bar-color` (top bar background)
+- line 69: `--toolbar-font-color` (File menu text)
+- line 70: `--toolbar-panel-color` (File dropdown panel)
+- line 71: `--toolbar-hover-color` (hover color)
+
+Quick path:
+
+1. Open `src/renderer/src/assets/main.css`
+2. Find `TOOLBAR COLOR KNOBS`
+3. Change lines 68-71
+4. Save the file
+
+Example:
+
+```css
+.app {
+  --toolbar-bar-color: #5e6ad4;
+  --toolbar-font-color: #5e6ad4;
+  --toolbar-panel-color: #5e6ad4;
+  --toolbar-hover-color: #5e6ad4;
+}
+```
+
+Important: changing `README.md` will not affect the app UI. Only edits in `src/renderer/src/assets/main.css` are applied.
+
 ## Troubleshooting
 
 ### `npm install` fails
