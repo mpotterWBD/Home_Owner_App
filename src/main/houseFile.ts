@@ -1,6 +1,6 @@
 import { dialog, ipcMain, shell, BrowserWindow, OpenDialogOptions } from 'electron'
-import { readFile, writeFile, mkdir, copyFile } from 'fs/promises'
-import { basename, extname, dirname, join } from 'path'
+import { readFile, writeFile, mkdir, copyFile, access } from 'fs/promises'
+import { basename, extname, dirname, join, isAbsolute } from 'path'
 import { randomUUID } from 'crypto'
 import {
   HouseFile,
@@ -45,6 +45,74 @@ const IMAGE_MIME_TYPES: Record<string, string> = {
 function attachmentsDirFor(filePath: string): string {
   const name = basename(filePath, extname(filePath))
   return join(dirname(filePath), `${name}.attachments`)
+}
+
+function legacyAttachmentsDirFor(filePath: string): string {
+  return join(dirname(filePath), 'attachments')
+}
+
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await access(filePath)
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function resolveAttachmentPath(houseFilePath: string, storedPath?: string): Promise<string | undefined> {
+  if (!storedPath) return undefined
+
+  const value = storedPath.trim()
+  if (!value) return undefined
+
+  const candidates: string[] = []
+  const seen = new Set<string>()
+  const pushCandidate = (candidate: string): void => {
+    if (!seen.has(candidate)) {
+      seen.add(candidate)
+      candidates.push(candidate)
+    }
+  }
+
+  if (isAbsolute(value)) {
+    pushCandidate(value)
+  } else {
+    pushCandidate(join(dirname(houseFilePath), value))
+    pushCandidate(join(attachmentsDirFor(houseFilePath), value))
+    pushCandidate(join(legacyAttachmentsDirFor(houseFilePath), value))
+  }
+
+  const leafName = basename(value)
+  pushCandidate(join(attachmentsDirFor(houseFilePath), leafName))
+  pushCandidate(join(legacyAttachmentsDirFor(houseFilePath), leafName))
+  pushCandidate(join(dirname(houseFilePath), leafName))
+
+  for (const candidate of candidates) {
+    if (await fileExists(candidate)) {
+      return candidate
+    }
+  }
+
+  return value
+}
+
+async function normalizeAttachmentPaths(filePath: string, data: HouseFile): Promise<HouseFile> {
+  data.house.photoPath = await resolveAttachmentPath(filePath, data.house.photoPath)
+
+  for (const project of data.projects) {
+    project.invoicePath = await resolveAttachmentPath(filePath, project.invoicePath)
+
+    const photoPaths = project.photoPaths ?? []
+    const resolvedPhotoPaths: string[] = []
+    for (const photoPath of photoPaths) {
+      const resolved = await resolveAttachmentPath(filePath, photoPath)
+      if (resolved) resolvedPhotoPaths.push(resolved)
+    }
+    project.photoPaths = resolvedPhotoPaths
+  }
+
+  return data
 }
 
 export function registerHouseFileHandlers(): void {
@@ -169,10 +237,8 @@ export function registerHouseFileHandlers(): void {
     const filePath = result.filePaths[0]
     const raw = await readFile(filePath, 'utf-8')
     const data = JSON.parse(raw) as HouseFile
-    data.projects = data.projects.map((project) => ({
-      ...project,
-      photoPaths: project.photoPaths ?? []
-    }))
+    data.projects = data.projects.map((project) => ({ ...project, photoPaths: project.photoPaths ?? [] }))
+    await normalizeAttachmentPaths(filePath, data)
     return { filePath, data }
   })
 

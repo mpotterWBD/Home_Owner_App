@@ -4,9 +4,26 @@ Home Bound Explorer is a desktop app for tracking home renovation and repair pro
 
 This project is not packaged yet, so to run it you must install dependencies and launch it in development mode from the command line.
 
-## What you need before you run it
+## Before you start: install Node.js and npm
 
-### Prerequisites
+This app must be run from a terminal, and the terminal needs Node.js and npm installed first.
+
+If you do not have Node.js yet, do this first:
+
+1. Go to https://nodejs.org/
+2. Download the LTS version for your operating system
+3. Run the installer and accept the default options
+4. Close and reopen your terminal after installation
+5. Confirm it worked by running:
+
+```bash
+node -v
+npm -v
+```
+
+If you see `bash: node: command not found`, `bash: npm: command not found`, or `npm is not recognized`, Node.js is not installed correctly or is not on your PATH yet. In that case, reinstall Node.js LTS and reopen the terminal before continuing.
+
+### Requirements
 
 - Node.js LTS (recommended: Node 20+ / npm 10+)
 - Git
@@ -15,10 +32,6 @@ This project is not packaged yet, so to run it you must install dependencies and
   - Windows
   - macOS
   - Linux
-
-### Recommended setup
-
-Use the latest LTS version of Node.js and make sure `npm` is installed with it. If you are on Windows, PowerShell is fine for the commands below.
 
 ## Quick start
 
@@ -156,7 +169,18 @@ This means the app is meant to be used as a local desktop document store rather 
 
 ### `npm install` fails
 
-- Ensure Node.js LTS is installed and active in your terminal.
+The most common cause is simply that Node.js is not installed or not available in the terminal.
+
+- Install Node.js LTS from nodejs.org
+- Verify it is available:
+
+```bash
+node -v
+npm -v
+```
+
+If you still get `bash: npm: command not found` or `npm is not recognized`, restart your terminal after installation or reopen the terminal session.
+
 - Remove `node_modules` and reinstall if the install is corrupted:
 
 ```bash
