@@ -361,8 +361,13 @@
   /* Knob: width of the New/Edit item modals. (The New House modal ignores this — it sizes
      itself dynamically off the chosen photo's aspect ratio via inline style instead.) */
   --modal-width: 500px;
+  /* Knob: modal never grows past this height — content (e.g. lots of pictures) scrolls
+     internally instead of pushing the Cancel/Create buttons off-screen. */
+  --modal-max-height: 85vh;
 
   width: var(--modal-width);
+  max-height: var(--modal-max-height);
+  overflow-y: auto;
   background: var(--color-background-soft);
   border: 1px solid var(--ev-c-gray-3);
   border-radius: 8px;
