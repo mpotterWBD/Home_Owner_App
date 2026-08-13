@@ -69,6 +69,8 @@
   --toolbar-font-color: #2f2a1f;
   --toolbar-panel-color: #199ec7;
   --toolbar-hover-color: #e2e0da;
+  --toolbar-border-color: rgba(0, 0, 0, 0.22);
+  --toolbar-shadow-color: rgba(0, 0, 0, 0.2);
 }
 
 .toolbar {
@@ -80,8 +82,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 24px;
-  border-bottom: 1px solid var(--ev-c-gray-3);
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--toolbar-border-color);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
   background: var(--menu-bar-bg);
   color: var(--menu-bar-fg);
 }
@@ -89,7 +92,7 @@
 .menu-bar {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .menu-group {
@@ -100,34 +103,60 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
+  min-height: 32px;
+  padding: 6px 12px;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: 6px;
   background: transparent;
   color: var(--menu-bar-fg);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    transform 120ms ease;
 }
 
 .menu-trigger:hover,
 .menu-trigger-open {
   background: var(--toolbar-hover-color);
-  border-color: #b6ad97;
+  border-color: var(--toolbar-border-color);
+}
+
+.menu-trigger:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 1px;
+}
+
+.menu-trigger:active {
+  transform: translateY(1px);
+}
+
+.menu-caret {
+  transition: transform 120ms ease;
+}
+
+.menu-trigger-open .menu-caret {
+  transform: rotate(180deg);
 }
 
 .menu-panel {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 6px);
   left: 0;
   min-width: 220px;
   display: flex;
   flex-direction: column;
-  padding: 6px;
-  border: 1px solid var(--ev-c-gray-3);
-  border-radius: 6px;
+  padding: 8px;
+  border: 1px solid var(--toolbar-border-color);
+  border-radius: 10px;
   background: var(--toolbar-panel-color);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+  box-shadow:
+    0 14px 28px var(--toolbar-shadow-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(1.5px);
   z-index: 20;
 }
 
@@ -136,18 +165,29 @@
   align-items: center;
   gap: 8px;
   width: 100%;
+  min-height: 34px;
   padding: 8px 10px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   background: transparent;
   color: var(--menu-bar-fg);
   font-size: 13px;
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    transform 120ms ease;
 }
 
 .menu-item:hover {
   background: var(--toolbar-hover-color);
+  transform: translateX(2px);
+}
+
+.menu-item:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 1px;
 }
 
 .btn {
@@ -169,12 +209,12 @@
 }
 
 .content {
-  /* Knob: left/right breathing room around the whole workspace (categories + details) */
-  --workspace-padding-x: 180px;
+  /* Knob: left/right breathing room around the whole workspace */
+  --workspace-padding-x: clamp(12px, 2.5vw, 28px);
 
   flex: 1;
   overflow: auto;
-  padding: 24px var(--workspace-padding-x);
+  padding: 16px var(--workspace-padding-x);
 }
 
 .file-status {
@@ -184,32 +224,129 @@
 }
 
 .workspace {
-  /* Knobs: fixed pixel widths for each column. Neither one is relative to the other or to
-     content, so selecting/deselecting an item can never shift the category column's size. */
-  --category-width: 1000px;
-  --detail-width: 500px;
+  --parent-width: clamp(130px, 16vw, 180px);
 
   display: grid;
-  grid-template-columns: var(--category-width) var(--detail-width);
+  grid-template-columns: var(--parent-width) minmax(0, 1fr);
   align-items: stretch;
-  gap: 24px;
-  overflow-x: auto;
+  gap: 16px;
+  overflow-x: hidden;
+}
+
+.parent-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-self: start;
+  padding: 12px;
+  border: 1px solid var(--ev-c-gray-3);
+  border-radius: 8px;
+  background: var(--color-background-soft);
+}
+
+.parent-section-btn {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text);
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.parent-section-btn:hover {
+  background: var(--ev-c-gray-3);
+}
+
+.parent-section-btn-active {
+  background: #30a46c;
+  border-color: #30a46c;
+  color: #fff;
+}
+
+.workspace-stage {
+  min-width: 0;
+}
+
+.workspace-stage-invoicing {
+  --category-col: minmax(0, 1.35fr);
+  --detail-col: minmax(260px, 0.95fr);
+
+  display: grid;
+  grid-template-columns: var(--category-col) var(--detail-col);
+  align-items: start;
+  gap: 16px;
+}
+
+.workspace-stage-placeholder {
+  display: block;
+}
+
+.feature-placeholder {
+  min-height: 320px;
+  padding: 20px;
+  border: 1px solid var(--ev-c-gray-3);
+  border-radius: 8px;
+  background: var(--color-background-soft);
+}
+
+.feature-placeholder h2 {
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.feature-placeholder p {
+  color: var(--ev-c-text-2);
+  font-size: 14px;
 }
 
 .category-list {
   /* Knob: gap between category rows */
   --category-gap: 20px;
 
+  min-width: 0;
+  align-self: start;
   display: flex;
   flex-direction: column;
   gap: var(--category-gap);
 }
 
 .detail-panel {
+  min-width: 0;
   overflow-y: auto;
   padding: 14px 18px;
   border: 1px solid var(--ev-c-gray-3);
   border-radius: 6px;
+}
+
+@media (max-width: 1280px) {
+  .workspace {
+    --parent-width: 140px;
+  }
+
+  .workspace-stage-invoicing {
+    --category-col: minmax(0, 1.2fr);
+    --detail-col: minmax(240px, 0.9fr);
+  }
+}
+
+@media (max-width: 1080px) {
+  .content {
+    --workspace-padding-x: 10px;
+  }
+
+  .workspace {
+    --parent-width: 124px;
+    gap: 12px;
+  }
+
+  .workspace-stage-invoicing {
+    gap: 12px;
+  }
 }
 
 .detail-panel-header {

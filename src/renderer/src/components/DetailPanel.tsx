@@ -3,22 +3,28 @@ import { Project } from '../../../shared/houseFile'
 import ProjectPhoto from './ProjectPhoto'
 
 interface DetailPanelProps {
-  project: Project
+  project: Project | null
   maxHeight?: number
   onEdit: () => void
   onComplete: () => void
 }
 
-function DetailPanel({
-  project,
-  maxHeight,
-  onEdit,
-  onComplete
-}: DetailPanelProps): React.JSX.Element {
+function DetailPanel({ project, maxHeight, onEdit, onComplete }: DetailPanelProps): React.JSX.Element {
+  if (!project) {
+    return (
+      <div className="detail-panel" style={maxHeight !== undefined ? { height: maxHeight } : undefined}>
+        <div className="detail-panel-header">
+          <h2 className="detail-heading">Details</h2>
+        </div>
+        <p className="detail-empty">Select an invoice item to view details.</p>
+      </div>
+    )
+  }
+
   const photoPaths = project.photoPaths ?? []
 
   return (
-    <div className="detail-panel" style={maxHeight !== undefined ? { maxHeight } : undefined}>
+    <div className="detail-panel" style={maxHeight !== undefined ? { height: maxHeight } : undefined}>
       <div className="detail-panel-header">
         <h2 className="detail-heading">Details</h2>
         <button className="detail-edit" aria-label="Edit item" onClick={onEdit}>

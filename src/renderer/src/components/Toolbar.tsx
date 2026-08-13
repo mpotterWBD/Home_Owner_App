@@ -42,7 +42,7 @@ function Toolbar({ onNew, onOpen }: ToolbarProps): React.JSX.Element {
             aria-haspopup="menu"
           >
             File
-            <ChevronDown size={14} />
+            <ChevronDown className="menu-caret" size={14} />
           </button>
           {openMenu === 'file' && (
             <div className="menu-panel" role="menu" aria-label="File">

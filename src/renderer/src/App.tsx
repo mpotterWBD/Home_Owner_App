@@ -15,8 +15,16 @@ import {
 } from '../../shared/houseFile'
 
 function App(): React.JSX.Element {
+  const PARENT_SECTIONS = [
+    { id: 'invoicing', label: 'Invoicing' },
+    { id: 'paint', label: 'Paint' }
+  ] as const
+
+  type ParentSectionId = (typeof PARENT_SECTIONS)[number]['id']
+
   const [filePath, setFilePath] = useState<string | null>(null)
   const [houseFile, setHouseFile] = useState<HouseFile | null>(null)
+  const [activeParentSection, setActiveParentSection] = useState<ParentSectionId>('invoicing')
   const [showNewModal, setShowNewModal] = useState(false)
   const [addingCategory, setAddingCategory] = useState<(typeof PROJECT_CATEGORIES)[number] | null>(
     null
@@ -37,9 +45,10 @@ function App(): React.JSX.Element {
     const observer = new ResizeObserver((entries) => {
       setDetailMaxHeight(entries[0].contentRect.height)
     })
+
     observer.observe(el)
     return () => observer.disconnect()
-  }, [houseFile !== null])
+  }, [houseFile, activeParentSection])
 
   const handleCreate = async (input: NewHouseInput): Promise<void> => {
     try {
@@ -108,6 +117,12 @@ function App(): React.JSX.Element {
     setIsEditing(false)
   }
 
+  const handleSelectParentSection = (id: ParentSectionId): void => {
+    setActiveParentSection(id)
+    setSelectedProjectId(null)
+    setIsEditing(false)
+  }
+
   return (
     <div className="app">
       <Header />
@@ -115,25 +130,47 @@ function App(): React.JSX.Element {
       <main className="content">
         {houseFile ? (
           <div className="workspace">
-            <div className="category-list" ref={categoryListRef}>
-              {PROJECT_CATEGORIES.map((cat) => (
-                <CategorySection
-                  key={cat.value}
-                  title={cat.label}
-                  projects={houseFile.projects.filter((p) => p.category === cat.value)}
-                  selectedProjectId={selectedProjectId}
-                  onAddProject={() => setAddingCategory(cat)}
-                  onSelectProject={handleSelectProject}
-                />
+            <aside className="parent-sections" aria-label="Parent sections">
+              {PARENT_SECTIONS.map((section) => (
+                <button
+                  key={section.id}
+                  type="button"
+                  className={`parent-section-btn ${activeParentSection === section.id ? 'parent-section-btn-active' : ''}`}
+                  onClick={() => handleSelectParentSection(section.id)}
+                >
+                  {section.label}
+                </button>
               ))}
-            </div>
-            {selectedProject && (
-              <DetailPanel
-                project={selectedProject}
-                maxHeight={detailMaxHeight}
-                onEdit={() => setIsEditing(true)}
-                onComplete={handleCompleteProject}
-              />
+            </aside>
+
+            {activeParentSection === 'invoicing' ? (
+              <div className="workspace-stage workspace-stage-invoicing">
+                <div className="category-list" ref={categoryListRef}>
+                  {PROJECT_CATEGORIES.map((cat) => (
+                    <CategorySection
+                      key={cat.value}
+                      title={cat.label}
+                      projects={houseFile.projects.filter((p) => p.category === cat.value)}
+                      selectedProjectId={selectedProjectId}
+                      onAddProject={() => setAddingCategory(cat)}
+                      onSelectProject={handleSelectProject}
+                    />
+                  ))}
+                </div>
+                <DetailPanel
+                  project={selectedProject}
+                  maxHeight={detailMaxHeight}
+                  onEdit={() => setIsEditing(true)}
+                  onComplete={handleCompleteProject}
+                />
+              </div>
+            ) : (
+              <div className="workspace-stage workspace-stage-placeholder">
+                <section className="feature-placeholder" aria-label="Paint placeholder">
+                  <h2>Paint</h2>
+                  <p>Placeholder screen. This section is ready for future features.</p>
+                </section>
+              </div>
             )}
           </div>
         ) : (
